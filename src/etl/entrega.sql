@@ -18,6 +18,7 @@ tb_pedido AS(
 
   WHERE 
     dtPedido BETWEEN '2017-07-01' AND '2018-01-01'
+    AND t2.idVendedor IS NOT NULL
 
   GROUP BY
     t1.idPedido,
@@ -27,20 +28,27 @@ tb_pedido AS(
     t1.dtAprovado,
     t1.dtEntregue,
     t1.dtEstimativaEntrega
+),
+
+tb_final AS (
+  SELECT
+    idVendedor,
+    COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' AND DATE(COALESCE(dtEntregue, '2018-01-01')) > DATE(dtEstimativaEntrega) THEN idPedido END) /
+      COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' THEN idPedido END) AS pctPedidoAtraso,
+    COUNT(DISTINCT CASE WHEN descSituacao = 'canceled' THEN idPedido END) / COUNT(DISTINCT idPedido) AS pctPedidoCancelado,
+    AVG(totalFrete) AS avgFrete,
+    PERCENTILE(totalFrete, 0.5) AS medianFrete,
+    MAX(totalFrete) AS maxFrete,
+    MIN(totalFrete) AS minFrete,
+    AVG(DATEDIFF(COALESCE(dtEntregue, '2018-01-01'), dtAprovado)) AS qtdDiasAprovadoEntrega,
+    AVG(DATEDIFF(COALESCE(dtEntregue, '2018-01-01'), dtPedido)) AS qtdDiasPedidoEntrega,
+    AVG(DATEDIFF(dtEstimativaEntrega, COALESCE(dtEntregue, '2018-01-01'))) AS qtdDiasPedidoEntrega
+
+  FROM tb_pedido
+  GROUP BY 1
 )
 
-SELECT 
-  idVendedor,
-  COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' AND DATE(COALESCE(dtEntregue, '2018-01-01')) > DATE(dtEstimativaEntrega) THEN idPedido END) /
-    COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' THEN idPedido END) AS pctPedidoAtraso,
-  COUNT(DISTINCT CASE WHEN descSituacao = 'canceled' THEN idPedido END) / COUNT(DISTINCT idPedido) AS pctPedidoCancelado,
-  AVG(totalFrete) AS avgFrete,
-  PERCENTILE(totalFrete, 0.5) AS medianFrete,
-  MAX(totalFrete) AS maxFrete,
-  MIN(totalFrete) AS minFrete,
-  AVG(DATEDIFF(COALESCE(dtEntregue, '2018-01-01'), dtAprovado)) AS qtdDiasAprovadoEntrega,
-  AVG(DATEDIFF(COALESCE(dtEntregue, '2018-01-01'), dtPedido)) AS qtdDiasPedidoEntrega,
-  AVG(DATEDIFF(dtEstimativaEntrega, COALESCE(dtEntregue, '2018-01-01'))) AS qtdDiasPedidoEntrega
-  
-FROM tb_pedido
-GROUP BY 1
+SELECT
+  '2018-01-01' AS dtReference,
+  *
+FROM tb_final

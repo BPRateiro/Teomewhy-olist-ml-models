@@ -1,3 +1,4 @@
+-- Databricks notebook source
 WITH
 
 tb_pedido_item AS(
@@ -10,7 +11,7 @@ tb_pedido_item AS(
   ON t1.idPedido = t2.idPedido
 
   WHERE 
-    t1.dtPedido BETWEEN ADD_MONTHS('{date}', -6) AND '{date}'
+    t1.dtPedido BETWEEN '2017-07-01' AND '2018-01-01'
     AND t2.idVendedor IS NOT NULL
 ),
 
@@ -20,7 +21,7 @@ tb_summary AS (
     COUNT(DISTINCT idPedido) AS qtdPedidos,
     COUNT(DISTINCT DATE(dtPedido)) AS qtdDias,
     COUNT(idProduto) AS qtdItens,
-    DATEDIFF('{date}', MAX(dtPedido)) AS qtdRecencia,
+    DATEDIFF('2018-01-01', MAX(dtPedido)) AS qtdRecencia,
     SUM(vlPreco) / COUNT(DISTINCT idPedido) AS avgTicket,
     AVG(vlPreco) AS avgValorProduto,
     MAX(vlPreco) AS maxValorProduto,
@@ -52,14 +53,14 @@ tb_life AS (
   SELECT 
     t2.idVendedor,
     SUM(vlPreco) AS LTV,
-    MAX(DATEDIFF('{date}', dtPedido)) AS qtdeDiasBase
+    MAX(DATEDIFF('2018-01-01', dtPedido)) AS qtdeDiasBase
   FROM silver.olist.pedido AS t1
 
   LEFT JOIN silver.olist.item_pedido AS t2
   ON t1.idPedido = t2.idPedido
 
   WHERE 
-    t1.dtPedido < '{date}'
+    t1.dtPedido < '2018-01-01'
     AND t2.idVendedor IS NOT NULL
 
   GROUP BY t2.idVendedor
@@ -89,7 +90,7 @@ tb_intervalo AS (
 )
 
 SELECT 
-  '{date}' AS dtReference,
+  '2018-01-01' AS dtReference,
   NOW() AS dtIngestion,
   t1.*,
   t2.minVlPedido,

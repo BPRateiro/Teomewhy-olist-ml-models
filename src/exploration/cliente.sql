@@ -1,3 +1,4 @@
+-- Databricks notebook source
 WITH 
 tb_join AS (
   SELECT
@@ -15,7 +16,7 @@ tb_join AS (
   ON t1.idCliente = t3.idCliente
 
   WHERE 
-    dtPedido BETWEEN ADD_MONTHS('{date}', -6) AND '{date}'
+    dtPedido BETWEEN '2017-07-01' AND '2018-01-01'
     AND idVendedor IS NOT NULL
 ),
 
@@ -57,7 +58,6 @@ tb_grouped AS(
 )
 
 SELECT 
-  '{date}' AS dtReference,
-  NOW() AS dtIngestion,
+  '2018-01-01' AS dtReference,
   * 
 FROM tb_grouped

@@ -1,4 +1,8 @@
 # Databricks notebook source
+# MAGIC %pip install tqdm
+
+# COMMAND ----------
+
 import datetime
 
 def import_query(path):

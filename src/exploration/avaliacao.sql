@@ -1,3 +1,4 @@
+-- Databricks notebook source
 WITH
 tb_pedido AS (
   SELECT
@@ -10,7 +11,7 @@ tb_pedido AS (
   ON t1.idPedido = t2.idPedido
 
   WHERE
-    dtPedido BETWEEN ADD_MONTHS('{date}', -6) AND '{date}'
+    dtPedido BETWEEN '2017-07-01' AND '2018-01-01'
     AND idVendedor IS NOT NULL
 ),
 
@@ -38,7 +39,6 @@ tb_summary AS(
 )  
 
 SELECT
-  '{date}' AS dtReference,
-  NOW() AS dtIngestion,
+  '2018-01-01' AS dtReference,
   *
 FROM tb_summary

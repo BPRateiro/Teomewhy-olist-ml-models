@@ -1,3 +1,4 @@
+-- Databricks notebook source
 WITH
 tb_pedido AS(
   SELECT 
@@ -16,7 +17,7 @@ tb_pedido AS(
   ON t1.idPedido = t2.idPedido
 
   WHERE 
-    dtPedido BETWEEN ADD_MONTHS('{date}', -6) AND '{date}'
+    dtPedido BETWEEN '2017-07-01' AND '2018-01-01'
     AND t2.idVendedor IS NOT NULL
 
   GROUP BY
@@ -32,23 +33,22 @@ tb_pedido AS(
 tb_final AS (
   SELECT
     idVendedor,
-    COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' AND DATE(COALESCE(dtEntregue, '{date}')) > DATE(dtEstimativaEntrega) THEN idPedido END) /
+    COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' AND DATE(COALESCE(dtEntregue, '2018-01-01')) > DATE(dtEstimativaEntrega) THEN idPedido END) /
       COUNT(DISTINCT CASE WHEN descSituacao = 'delivered' THEN idPedido END) AS pctPedidoAtraso,
     COUNT(DISTINCT CASE WHEN descSituacao = 'canceled' THEN idPedido END) / COUNT(DISTINCT idPedido) AS pctPedidoCancelado,
     AVG(totalFrete) AS avgFrete,
     PERCENTILE(totalFrete, 0.5) AS medianFrete,
     MAX(totalFrete) AS maxFrete,
     MIN(totalFrete) AS minFrete,
-    AVG(DATEDIFF(COALESCE(dtEntregue, '{date}'), dtAprovado)) AS qtdDiasAprovadoEntrega,
-    AVG(DATEDIFF(COALESCE(dtEntregue, '{date}'), dtPedido)) AS qtdDiasPedidoEntrega,
-    AVG(DATEDIFF(dtEstimativaEntrega, COALESCE(dtEntregue, '{date}'))) AS qtdDiasPedidoEntrega
+    AVG(DATEDIFF(COALESCE(dtEntregue, '2018-01-01'), dtAprovado)) AS qtdDiasAprovadoEntrega,
+    AVG(DATEDIFF(COALESCE(dtEntregue, '2018-01-01'), dtPedido)) AS qtdDiasPedidoEntrega,
+    AVG(DATEDIFF(dtEstimativaEntrega, COALESCE(dtEntregue, '2018-01-01'))) AS qtdDiasPedidoEntrega
 
   FROM tb_pedido
   GROUP BY 1
 )
 
 SELECT
-  '{date}' AS dtReference,
-  NOW() AS dtIngestion,
+  '2018-01-01' AS dtReference,
   *
 FROM tb_final
